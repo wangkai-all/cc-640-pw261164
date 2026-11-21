@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>增量多重集合运算 · UNION / INTERSECT / EXCEPT ALL</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>增量多重集合运算台</h1>
+    <div class="meta">
+      <span>当前版本 <strong id="current-version">–</strong></span>
+      <span>左表行数 <strong id="left-count">–</strong></span>
+      <span>右表行数 <strong id="right-count">–</strong></span>
+      <span class="hint">NULL 按 SQL 集合运算归并语义（NULL = NULL）</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="panel-setup">
+      <h2>1 · 导入两侧文件</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>左侧输入</h3>
+          <input type="file" id="left-file" accept=".csv,text/csv" />
+          <p class="hint">CSV 首行表头；空单元格视为 NULL；单元格可写 <code>f:1.0</code>、<code>i:7</code>、<code>b:true</code>、<code>t:文本</code>、<code>n:</code> 强制类型。</p>
+          <button data-import="left">导入左侧</button>
+        </div>
+        <div class="card">
+          <h3>右侧输入</h3>
+          <input type="file" id="right-file" accept=".csv,text/csv" />
+          <p class="hint">两侧比较列按位置一一对应，元组按完整带类型值判等。</p>
+          <button data-import="right">导入右侧</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="load-sample" class="secondary">载入手算样本</button>
+        <button id="reset-all" class="danger">清空重建</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>2 · 选择参与比较的列</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>左侧比较列（按顺序）</h3>
+          <div id="left-cols" class="col-picker"></div>
+        </div>
+        <div class="card">
+          <h3>右侧比较列（按顺序）</h3>
+          <div id="right-cols" class="col-picker"></div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button id="apply-config">应用比较列配置</button>
+        <span id="config-status" class="hint"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>3 · 变更批次（新增 / 撤销 / 更正）</h2>
+      <p class="hint">一个批次可同时修改左右两侧，提交后三种结果在同一版本原子切换；同一批次号重发为幂等重放。</p>
+      <div class="toolbar wrap">
+        <label>批次号 <input type="text" id="batch-id" /></label>
+        <button id="gen-batch-id" class="secondary">生成批次号</button>
+        <button id="add-op">加一条「新增」</button>
+        <button id="submit-batch" class="primary">提交整批</button>
+      </div>
+      <div id="ops-editor"></div>
+    </section>
+
+    <section class="panel">
+      <h2>4 · 三种结果仓表（同一批次版本）</h2>
+      <div class="toolbar">
+        <label>读取版本
+          <select id="version-select"></select>
+        </label>
+        <button id="refresh-results" class="secondary">刷新</button>
+        <span id="read-version" class="hint"></span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="union">UNION ALL</button>
+        <button class="tab" data-tab="intersect">INTERSECT ALL</button>
+        <button class="tab" data-tab="except">EXCEPT ALL</button>
+      </div>
+      <div id="result-table"></div>
+    </section>
+
+    <section class="panel">
+      <h2>5 · 来源行与事件台账</h2>
+      <div class="tabs">
+        <button class="tab-src active" data-src="left">左侧来源行</button>
+        <button class="tab-src" data-src="right">右侧来源行</button>
+        <button class="tab-src" data-src="events">事件台账</button>
+        <button class="tab-src" data-src="batches">批次记录</button>
+      </div>
+      <div id="ledger-table"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
